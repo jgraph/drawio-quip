@@ -1621,7 +1621,7 @@ function toggleShapes()
 
     if (ui.sidebarWindow == null)
     {
-        var w = (fullscreen) ? 310 : Math.max(214, Math.min(310, rect.left));
+        var w = (fullscreen) ? 218 : Math.max(218, Math.min(218, rect.left));
         
         ui.sidebarWindow = new WrapperWindow(ui, mxResources.get('shapes'),
            (fullscreen) ? 10 : Math.max(0, rect.left - w), (fullscreen) ? 7 : 30,
