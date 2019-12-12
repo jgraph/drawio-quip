@@ -2400,6 +2400,12 @@ function main(isCreateViewer, onLoad)
     {
         graphSetShadowVisible.apply(this, [Editor.shadowOptionEnabled && value, fireEvent]);
     };
+
+    // Disables CSS transforms for zoom
+    Graph.prototype.isFastZoomEnabled = function()
+    {
+    	return false;
+    }
     
     // Disables CSS transforms in editable documents
 	var graphIsCssTransformsSupported = Graph.prototype.isCssTransformsSupported;
