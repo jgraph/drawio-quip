@@ -129,8 +129,8 @@ var gridVisible = false;
            '.geEditor ::-webkit-scrollbar-thumb { background:#c5c5c5; border-radius:10px; border:whiteSmoke solid 3px;   }  .geEditor ::-webkit-scrollbar-thumb:hover { background:#b5b5b5;}  .geTemplate {   border:1px solid transparent;   display:inline-block;   _display:inline;    vertical-align:top; border-radius:3px;  overflow:hidden; font-size:14pt; cursor:pointer; margin:5px;}' +
            // Styling for Quip
            '.geToolbarContainer { background:#fff !important; }' +
-           'div.mxWindow .geSidebarContainer .geTitle { background-color:#fdfdfd; }' +
-           'div.mxWindow .geSidebarContainer .geTitle:hover { background-color:#fafafa; }' +
+           'div.mxWindow .geSidebarContainer .geTitle { background-color:#fff; }' +
+           'div.mxWindow .geSidebarContainer { background-color: #fff !important; }' +
            'div.geSidebar { background-color: #fff !important;}' +
            'div.mxWindow td.mxWindowPane button { background-image: none; float: none; }' +
            'td.mxWindowTitle { height: 22px !important; background: none !important; font-size: 13px !important; text-align:center !important; border-bottom:1px solid lightgray; }' +
@@ -1416,28 +1416,7 @@ function showConfigureDialog()
         ui.confirm('Compress diagram history?', null, function()
         {
             ui.hideDialog();
-
-            // Deletes all edits
-            var edits = rootRecord.get('edits');
-            
-            while (edits.count() > 0)
-            {
-                edits.get(0).delete();
-            }
-            
-            // Saves current state and deletes old revisions
-            saveDocument();
-            cleanupRevisions();
-
-            if (!viewerConfig.noPreview)
-            {
-                updateSnapshot();
-            }
-            else if (rootRecord.get("snapshot") != null)
-            {
-                debug('clear snapshot', rootRecord.getId());
-                rootRecord.clear('snapshot');
-            }
+            compressHistory();
         }, mxResources.get('cancel'), 'Compress'); //mxResources.get('reset'));
         
         mxEvent.consume(evt);
@@ -3710,6 +3689,31 @@ function createNewDialog()
     }
 };
 
+function compressHistory()
+{
+	// Deletes all edits
+    var edits = rootRecord.get('edits');
+    
+    while (edits.count() > 0)
+    {
+        edits.get(0).delete();
+    }
+    
+    // Saves current state and deletes old revisions
+    saveDocument();
+    cleanupRevisions();
+
+    if (!viewerConfig.noPreview)
+    {
+        updateSnapshot();
+    }
+    else if (rootRecord.get("snapshot") != null)
+    {
+        debug('clear snapshot', rootRecord.getId());
+        rootRecord.clear('snapshot');
+    }
+};
+
 function cleanupRevisions()
 {
     var revs = rootRecord.get('revisions');
@@ -4596,7 +4600,7 @@ function createViewer(createUi, fitWindow, onLoad)
                 createNewDialog();
             }
         }
-        else if (rootRecord.get("snapshot") == null && !viewerConfig.noPreview)
+        else if (rootRecord.get('snapshot') == null && !viewerConfig.noPreview)
         {
             var edits = rootRecord.get('edits');
             
@@ -5253,10 +5257,38 @@ Session.prototype.init = function(lastEdit, fit)
     });
     
     this.record.listen(this.recordListener);
-    
+
     if (this.record.count() > 0)
     {
         this.processEdits(this.record, true, fit);
+        
+        // Compresses history
+        if (!isReadOnlyMode())
+        {
+	        var maxHistoryDays = 30;
+	        
+	        // Uses config for maxHistoryDays
+	        if (Editor.config != null && Editor.config.maxHistoryDays != null)
+	        {
+	        	maxHistoryDays = Editor.config.maxHistoryDays;
+	        }
+	        
+	        debug('checking', this.record.count(), 'entries for maximum age', maxHistoryDays, 'days');
+	        
+	        if (maxHistoryDays > 0)
+	        {
+	        	var lastEdit = JSON.parse(this.record.get(this.record.count() - 1).get('data'));
+	        	var ageDays = Math.floor((new Date().getTime() - lastEdit.timestamp) / 86400000);
+	        	
+	        	debug('oldest edit', ageDays, 'days ago');
+	        	
+	        	if (ageDays > maxHistoryDays)
+	        	{
+	        		compressHistory();
+	        		debug('history reset');
+	        	}
+	        }
+        }
     }
     else
     {
