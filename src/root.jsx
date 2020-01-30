@@ -5265,7 +5265,7 @@ Session.prototype.init = function(lastEdit, fit)
         // Compresses history
         if (!isReadOnlyMode())
         {
-	        var maxHistoryDays = 30;
+	        var maxHistoryDays = 14;
 	        
 	        // Uses config for maxHistoryDays
 	        if (Editor.config != null && Editor.config.maxHistoryDays != null)
