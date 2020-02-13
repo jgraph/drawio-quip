@@ -4339,15 +4339,15 @@ function createViewer(createUi, fitWindow, onLoad)
                 ui.showDialog(dlg.container, 620, 420, true, false);
                 dlg.init();
             }));
-            
-            ui.actions.put('mermaid', new Action(mxResources.get('mermaid') + '...', function()
-            {
-                var dlg = new ParseDialog(ui, 'Insert from Text', 'mermaid');
-                ui.showDialog(dlg.container, 620, 420, true, false);
-                dlg.init();
-            }));
         }
-
+    
+        ui.actions.put('mermaid', new Action(mxResources.get('mermaid') + '...', function()
+        {
+            var dlg = new ParseDialog(ui, 'Insert from Text', 'mermaid');
+            ui.showDialog(dlg.container, 620, 420, true, false);
+            dlg.init();
+        }));
+        
         ui.actions.put('lockApp', new Action(mxResources.get('lockUnlock'), function()
         {
             setFullscreen(false, true);
@@ -4398,7 +4398,7 @@ function createViewer(createUi, fitWindow, onLoad)
 
         ui.menus.put('insertAdvanced', new Menu(mxUtils.bind(this, function(menu, parent)
         {
-            ui.menus.addMenuItems(menu, ['importText', 'plantUml', '-', 'importCsv',
+            ui.menus.addMenuItems(menu, ['importText', 'plantUml', 'mermaid', '-', 'importCsv',
                                          'formatSql', '-', 'editDiagram'], parent);
         })));
         
