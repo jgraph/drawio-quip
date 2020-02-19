@@ -4223,18 +4223,6 @@ function createViewer(createUi, fitWindow, onLoad)
             quip.apps.openLink('https://desk.draw.io/support/solutions/articles/16000075852');
         };
 
-//        ui.actions.put('addComment', new Action('Add comment...', function()
-//        {
-//            var cell = graph.getSelectionCell();
-//            
-//            if (cell != null)
-//            {
-//                var entry = {pageId: ui.currentPage.getId(), cellId: cell.id};
-//                var comment = rootRecord.get('comments').add(entry);
-//                console.log('comment', entry, comment);
-//                quip.apps.showComments(comment.getId());
-//            }
-//        }));
         ui.actions.put('fit', new Action(mxResources.get('fit'), function()
         {
             graph.popupMenuHandler.hideMenu();
@@ -4383,6 +4371,9 @@ function createViewer(createUi, fitWindow, onLoad)
         ui.menus.put('diagram', new Menu(mxUtils.bind(this, function(menu, parent)
         {
             ui.menus.addMenuItems(menu, ['comment', '-', 'outline', 'layers', '-', 'find', 'tags', '-'], parent);
+            ui.menus.addSubmenu('layout', menu, parent);
+            ui.menus.addSubmenu('options', menu, parent);
+            ui.menus.addMenuItems(menu, ['-'], parent);
             ui.menus.addSubmenu('export', menu, parent);
             ui.menus.addMenuItems(menu, ['preferences', '-'], parent);
             ui.menus.addSubmenu('help', menu, parent);

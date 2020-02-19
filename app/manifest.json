@@ -2,8 +2,8 @@
     "id": "JTXAjAqkD1J",
     "manifest_version": 1,
     "name": "draw.io Diagram",
-    "version_name": "1.8.0",
-    "version_number": 58,
+    "version_name": "1.8.1",
+    "version_number": 59,
     "sizing_mode": "scale",
     "initial_width": 800,
     "initial_height": 64,
@@ -15,7 +15,8 @@
     ],
     "css_files": [
         "dist/common.css",
-        "dist/grapheditor.css"
+        "dist/grapheditor.css",
+        "dist/croppie.min.css"
     ],
 	"csp_sources": {
 		"frame_srcs": [
