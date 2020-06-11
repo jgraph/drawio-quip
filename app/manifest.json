@@ -2,8 +2,8 @@
     "id": "JTXAjAqkD1J",
     "manifest_version": 1,
     "name": "draw.io Diagram",
-    "version_name": "1.8.5",
-    "version_number": 63,
+    "version_name": "1.8.6",
+    "version_number": 64,
     "sizing_mode": "scale",
     "initial_width": 800,
     "initial_height": 64,
@@ -17,6 +17,16 @@
         "dist/common.css",
         "dist/grapheditor.css",
         "dist/croppie.min.css"
+    ],
+    "other_resources": [
+        "dist/SalesforceSans-Regular.eot",
+        "dist/SalesforceSans-Regular.woff",
+        "dist/SalesforceSans-Italic.eot",
+        "dist/SalesforceSans-Italic.woff",
+        "dist/SalesforceSans-Bold.eot",
+        "dist/SalesforceSans-Bold.woff",
+        "dist/SalesforceSans-BoldItalic.eot",
+        "dist/SalesforceSans-BoldItalic.woff"
     ],
 	"csp_sources": {
 		"frame_srcs": [

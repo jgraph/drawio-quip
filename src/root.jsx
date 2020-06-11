@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2018, JGraph Ltd
- * Copyright (c) 2018, Gaudenz Alder
+ * Copyright (c) 2020, JGraph Ltd
+ * Copyright (c) 2020, Gaudenz Alder
  */
 import quip from "quip";
 
@@ -44,7 +44,14 @@ var defaultConfig = '{"version": "1.0",\n"mathematicalTypesetting": true,\n"inte
 	'{"fill": "#ff4050", "stroke": "#CC0D1D", "font": "#ffffff"}, {"fill": "#f7bc05", "stroke": "#C48900", "font": "#ffffff"},\n' +
 	'{"fill": "#29b6f2", "stroke": "#0083BF", "font": "#ffffff"}, {"fill": "#2ad352", "stroke": "#00A01F", "font": "#ffffff"},\n' +
 	'{"fill": "#ff7c36", "stroke": "#CC4903", "font": "#ffffff"}, {"fill": "#855ff5", "stroke": "#522CC2", "font": "#ffffff"}]]\n,' +
-    '"fontCss": "@font-face {    font-family: \\"Salesforce Sans Web\\";    src: url(\\"https://d2i1pl9gz4hwa7.cloudfront.net/qDglS7ij-J3KmCbIBbRp9w\\");    src: url(\\"https://d2i1pl9gz4hwa7.cloudfront.net/qDglS7ij-J3KmCbIBbRp9w?#iefix\\") format(\\"embedded-opentype\\"), url(\\"https://d2i1pl9gz4hwa7.cloudfront.net/ltBYBSH8O-l0MAtQjQq_bw\\") format(\\"woff\\");    font-weight: 400;    font-style: normal}@font-face {    font-family: \\"Salesforce Sans Web\\";    src: url(\\"https://d2i1pl9gz4hwa7.cloudfront.net/JARsV2-VySQhhcz6WEpmtw\\");    src: url(\\"https://d2i1pl9gz4hwa7.cloudfront.net/JARsV2-VySQhhcz6WEpmtw?#iefix\\") format(\\"embedded-opentype\\"), url(\\"https://d2i1pl9gz4hwa7.cloudfront.net/1G0-6xZwU5kI_is5YhgFcw\\") format(\\"woff\\");    font-weight: 400;    font-style: italic}@font-face {    font-family: \\"Salesforce Sans Web\\";    src: url(\\"https://d2i1pl9gz4hwa7.cloudfront.net/M6BL4QMsIfajuWRBac0hOw\\");    src: url(\\"https://d2i1pl9gz4hwa7.cloudfront.net/M6BL4QMsIfajuWRBac0hOw?#iefix\\") format(\\"embedded-opentype\\"), url(\\"https://d2i1pl9gz4hwa7.cloudfront.net/oU63uOobDJVXXUikyjI4qA\\") format(\\"woff\\");    font-weight: 700;    font-style: normal}@font-face {    font-family: \\"Salesforce Sans Web\\";    src: url(\\"https://d2i1pl9gz4hwa7.cloudfront.net/YN6M48LIBXRspvzW4sp12g\\");    src: url(\\"https://d2i1pl9gz4hwa7.cloudfront.net/YN6M48LIBXRspvzW4sp12g?#iefix\\") format(\\"embedded-opentype\\"), url(\\"https://d2i1pl9gz4hwa7.cloudfront.net/66X8OtidjFn4_ADijgVevg\\") format(\\"woff\\");    font-weight: 700;    font-style: italic; }"}';
+    '"fontCss": "@font-face { font-family: \\"Salesforce Sans Web\\"; src: url(\\"dist/SalesforceSans-Regular.eot\\"); format(\\"embedded-opentype\\"), ' +
+    	'url(\\"dist/SalesforceSans-Regular.woff\\") format(\\"woff\\"); font-weight: 400; font-style: normal}' +
+    '@font-face {font-family: \\"Salesforce Sans Web\\"; src: url(\\"dist/SalesforceSans-Italic.eot\\"); format(\\"embedded-opentype\\"), ' +
+    	'url(\\"dist/SalesforceSans-Italic.woff\\") format(\\"woff\\"); font-weight: 400; font-style: italic}' +
+    '@font-face {font-family: \\"Salesforce Sans Web\\"; src: url(\\"dist/SalesforceSans-Bold.eot\\"); format(\\"embedded-opentype\\"), ' +
+    	'url(\\"dist/SalesforceSans-Bold.woff\\") format(\\"woff\\"); font-weight: 700; font-style: normal}' +
+    '@font-face {font-family: \\"Salesforce Sans Web\\"; src: url(\\"dist/SalesforceSans-BoldItalic.eot\\"); format(\\"embedded-opentype\\"), ' +
+    	'url(\\"dist/SalesforceSans-BoldItalic.woff\\") format(\\"woff\\"); font-weight: 700; font-style: italic; }"}';
 
 // Offline language support is limited to English to keep the .ele small. English resources from dia.txt must be copied to the line below:
 // Replace \n with \\n and ' with \\' (regex) in a text editor and paste between the quotes.
@@ -2160,14 +2167,7 @@ function main(isCreateViewer, onLoad)
     
     EditorUi.prototype.saveLocalFile = function(data, filename, mimeType, base64Encoded, format, allowBrowser, allowTab)
     {
-        if (quip.apps.isNative != null && quip.apps.isNative())
-        {
-            this.doSaveLocalFile(data, filename, mimeType, base64Encoded);
-        }
-        else
-        {
-            editorUiSaveLocalFile.apply(this, arguments);
-        }
+    	this.doSaveLocalFile(data, filename, mimeType, base64Encoded);
     };
     
     // Disables remote conversion
@@ -2253,44 +2253,41 @@ function main(isCreateViewer, onLoad)
     //  {
     //      this.handleError(e, mxResources.get('errorLoadingFile')); 
     //  });
-    if ((quip.apps.isNative != null && quip.apps.isNative()) || mxClient.IS_SF)
-    {   
-        EditorUi.prototype.doSaveLocalFile = function(data, filename, mimeType, base64Encoded, format)
+    EditorUi.prototype.doSaveLocalFile = function(data, filename, mimeType, base64Encoded, format)
+    {
+        if (mimeType.substring(0, 5) == 'image')
         {
-            if (mimeType.substring(0, 5) == 'image')
+            var div = document.createElement('div');
+            div.style.textAlign = 'center';
+            div.style.whiteSpace = 'nowrap';
+            
+            var img = document.createElement('img');
+            img.setAttribute('src', 'data:' + mimeType + ((base64Encoded) ? ';base64,' +
+                    data : ';charset=utf8,' + encodeURIComponent(data)));
+            img.style.cssText = 'max-width:240px;max-height:150px;';
+            div.appendChild(img);
+            
+            mxUtils.br(div);
+            mxUtils.br(div);
+            mxUtils.write(div, 'Right click to save image.');
+            
+            var dlg = new CustomDialog(ui, div, function()
             {
-                var div = document.createElement('div');
-                div.style.textAlign = 'center';
-                div.style.whiteSpace = 'nowrap';
-                
-                var img = document.createElement('img');
-                img.setAttribute('src', 'data:' + mimeType + ((base64Encoded) ? ';base64,' +
-                        data : ';charset=utf8,' + encodeURIComponent(data)));
-                img.style.cssText = 'max-width:240px;max-height:150px;';
-                div.appendChild(img);
-                
-                mxUtils.br(div);
-                mxUtils.br(div);
-                mxUtils.write(div, 'Right click to save image.');
-                
-                var dlg = new CustomDialog(ui, div, function()
-                {
-                    // do nothing
-                }, null, mxResources.get('close'), null, null, true);
-                
-                ui.showDialog(dlg.container, 280, 230, true, true);
-            }
-            else
-            {
-                var dlg = new TextareaDialog(this, '', data, null, null, mxResources.get('close'));
-                dlg.textarea.style.width = '600px';
-                dlg.textarea.style.height = '380px';
-                this.showDialog(dlg.container, 620, 460, true, true);
-                dlg.init();
-                document.execCommand('selectall', false, null);
-            }
-        };
-    }
+                // do nothing
+            }, null, mxResources.get('close'), null, null, true);
+            
+            ui.showDialog(dlg.container, 280, 230, true, true);
+        }
+        else
+        {
+            var dlg = new TextareaDialog(this, '', data, null, null, mxResources.get('close'));
+            dlg.textarea.style.width = '600px';
+            dlg.textarea.style.height = '380px';
+            this.showDialog(dlg.container, 620, 460, true, true);
+            dlg.init();
+            document.execCommand('selectall', false, null);
+        }
+    };
 
     // Overridden to use page.model
     EditorUi.prototype.getXmlFileData = function(ignoreSelection, currentPage)
