@@ -1,4 +1,9 @@
-11-JUN-2020: 1.8.5
+13-JUN-2020: 1.8.7
+
+- Uses diagrams.net 13.2.4
+- Adds workaround for PDF export
+
+11-JUN-2020: 1.8.6
 
 - Uses diagrams.net 13.2.3
 - Adds workaround for image download
