@@ -2144,14 +2144,14 @@ function main(isCreateViewer, onLoad)
             console.log('draw.io configuration error:', e.message, configData);
         }
     }
-
+    
     EditorUi.prototype.isDiagramActive = function()
 	{
 		return true;
 	};
 	
 	var editorUiUpdateActionStates = EditorUi.prototype.updateActionStates;
-	    
+	
     EditorUi.prototype.updateActionStates = function()
 	{
 		editorUiUpdateActionStates.apply(this, arguments);
@@ -2162,14 +2162,76 @@ function main(isCreateViewer, onLoad)
 		this.actions.get('outline').setEnabled(true);
 	};
 
-    // Workaround for no download in all native apps
+    // Workaround for blocked downloads of exported files
     var editorUiSaveLocalFile = EditorUi.prototype.saveLocalFile;
     
     EditorUi.prototype.saveLocalFile = function(data, filename, mimeType, base64Encoded, format, allowBrowser, allowTab)
     {
-    	this.doSaveLocalFile(data, filename, mimeType, base64Encoded);
+   		this.doSaveLocalFile(data, filename, mimeType, base64Encoded);
     };
-    
+
+    EditorUi.prototype.doSaveLocalFile = function(data, filename, mimeType, base64Encoded, format)
+    {
+        if (mimeType.substring(0, 5) == 'image')
+        {
+            var div = document.createElement('div');
+            div.style.textAlign = 'center';
+            div.style.whiteSpace = 'nowrap';
+            
+            // Workaround for saving PDF is right click on hypelink with data URI
+            var img = document.createElement((format == 'pdf') ? 'a' : 'img');
+            img.setAttribute((format == 'pdf') ? 'href' : 'src',
+            	(format == 'pdf') ? 'data:application/pdf;base64,' + data :
+            	('data:' + mimeType + ((base64Encoded) ? ';base64,' +
+                 data : ';charset=utf8,' + encodeURIComponent(data))));
+            img.style.cssText = 'max-width:240px;max-height:150px;';
+            div.appendChild(img);
+            
+            if (format == 'pdf')
+            {
+            	img.setAttribute('target', '_blank');
+            	img.className = 'geBtn gePrimaryBtn';
+            	img.innerHTML = 'Right click here and choose<br>"Save Link As..." to save PDF.';
+            	img.style.display = 'inline-block';
+            	img.style.border = '1px solid gray';
+            	img.style.lineHeight = '1.5em';
+            	img.style.width = '240px';
+            	img.style.borderRadius = '10px';
+            	img.style.whiteSpace = 'normal';
+            	img.style.padding = '70px 0 100px 0';
+            }
+            else
+            {
+            	img.setAttribute('alt', filename);
+            	mxUtils.br(div);
+	            mxUtils.br(div);
+	            mxUtils.write(div, 'Right click image to save.');
+            }
+            
+        	// Adds open in new window for non-native apps
+        	var dlg = new CustomDialog(ui, div, function()
+            {
+                // do nothing
+            }, mxUtils.bind(this, function()
+            {
+           		this.openInNewWindow(data, mimeType, base64Encoded);
+            }), mxResources.get('close'), null, null, format == 'pdf' ||
+            	(quip.apps.isNative != null && quip.apps.isNative()),
+            	mxResources.get('openInNewWindow'));
+            
+            ui.showDialog(dlg.container, 280, 230, true, true);
+        }
+        else
+        {
+            var dlg = new TextareaDialog(this, '', data, null, null, mxResources.get('close'));
+            dlg.textarea.style.width = '600px';
+            dlg.textarea.style.height = '380px';
+            this.showDialog(dlg.container, 620, 460, true, true);
+            dlg.init();
+            document.execCommand('selectall', false, null);
+        }
+    };
+
     // Disables remote conversion
     var editorUiIsRemoteVisioFormat = EditorUi.prototype.isRemoteVisioFormat;
 
@@ -2229,63 +2291,6 @@ function main(isCreateViewer, onLoad)
                 this.spinner.stop();
                 this.handleError(resp);
             });
-        }
-    };
-
-    // Overridden for Safari and all native apps for best-effort download by showing
-    // images and non-binary file in an mxWindow inside the current window
-    // NOTE: Blob API as follows gave "Blob downloads forbidden for this element"
-    //  function base64ToArrayBuffer(base64) {
-    //      var binary_string =  window.atob(base64);
-    //      var len = binary_string.length;
-    //      var bytes = new Uint8Array( len );
-    //      for (var i = 0; i < len; i++)        {
-    //          bytes[i] = binary_string.charCodeAt(i);
-    //      }
-    //      return bytes.buffer;
-    //  }
-    //  
-    //  var blob = quip.apps.createBlobFromData(base64ToArrayBuffer(data));
-    //  blob.onDataLoaded(function()
-    //  {
-    //      blob.downloadAsFile();
-    //  }, function()
-    //  {
-    //      this.handleError(e, mxResources.get('errorLoadingFile')); 
-    //  });
-    EditorUi.prototype.doSaveLocalFile = function(data, filename, mimeType, base64Encoded, format)
-    {
-        if (mimeType.substring(0, 5) == 'image')
-        {
-            var div = document.createElement('div');
-            div.style.textAlign = 'center';
-            div.style.whiteSpace = 'nowrap';
-            
-            var img = document.createElement('img');
-            img.setAttribute('src', 'data:' + mimeType + ((base64Encoded) ? ';base64,' +
-                    data : ';charset=utf8,' + encodeURIComponent(data)));
-            img.style.cssText = 'max-width:240px;max-height:150px;';
-            div.appendChild(img);
-            
-            mxUtils.br(div);
-            mxUtils.br(div);
-            mxUtils.write(div, 'Right click to save image.');
-            
-            var dlg = new CustomDialog(ui, div, function()
-            {
-                // do nothing
-            }, null, mxResources.get('close'), null, null, true);
-            
-            ui.showDialog(dlg.container, 280, 230, true, true);
-        }
-        else
-        {
-            var dlg = new TextareaDialog(this, '', data, null, null, mxResources.get('close'));
-            dlg.textarea.style.width = '600px';
-            dlg.textarea.style.height = '380px';
-            this.showDialog(dlg.container, 620, 460, true, true);
-            dlg.init();
-            document.execCommand('selectall', false, null);
         }
     };
 
@@ -5061,12 +5066,12 @@ function updateActions()
         }
 
         // Cannot call print or open new window in native apps
-        if ((quip.apps.isNative != null && quip.apps.isNative()) ||
-       		(Editor.config != null && Editor.config.pdfExport != null &&
+        if ((Editor.config != null && Editor.config.pdfExport != null &&
             !Editor.config.pdfExport))
         {
-            ui.actions.get('exportPdf').setEnabled(false);
+        	ui.actions.get('exportPdf').setEnabled(false);
             cmds.push('exportPdf');
+            
             ui.actions.get('print').setEnabled(false);
             cmds.push('print');
         }
