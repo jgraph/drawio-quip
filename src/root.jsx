@@ -2180,28 +2180,37 @@ function main(isCreateViewer, onLoad)
             
             // Workaround for saving PDF is right click on hypelink with data URI
             var img = document.createElement((format == 'pdf') ? 'a' : 'img');
-            img.setAttribute((format == 'pdf') ? 'href' : 'src',
-            	(format == 'pdf') ? 'data:application/pdf;base64,' + data :
-            	('data:' + mimeType + ((base64Encoded) ? ';base64,' +
-                 data : ';charset=utf8,' + encodeURIComponent(data))));
             img.style.cssText = 'max-width:240px;max-height:150px;';
             div.appendChild(img);
-            
+
             if (format == 'pdf')
             {
+            	mimeType = 'application/pdf';
+            	img.href = URL.createObjectURL((base64Encoded) ?
+					this.base64ToBlob(data, mimeType) :
+					new Blob([data], {type: mimeType}));
             	img.setAttribute('target', '_blank');
             	img.className = 'geBtn gePrimaryBtn';
-            	img.innerHTML = 'Right click here and choose<br>"Save Link As..." to save PDF.';
-            	img.style.display = 'inline-block';
-            	img.style.border = '1px solid gray';
+            	img.innerHTML = '<span style="font-size:46px">PDF</span><br><br>Right click here<br>and save link.';
+            	img.style.width = '180px';
+            	img.style.color = '#ffffff';
+            	img.style.fontWeight = 'bold';
             	img.style.lineHeight = '1.5em';
-            	img.style.width = '240px';
-            	img.style.borderRadius = '10px';
             	img.style.whiteSpace = 'normal';
-            	img.style.padding = '70px 0 100px 0';
+            	img.style.display = 'inline-block';
+            	img.style.padding = '50px 0 120px 0';
+            	img.style.borderRadius = '12px';
+            	
+            	// Blocked by frame sandbox but since click is broken
+            	// it's better to use this sso that it starts working
+            	// if the 'allow-downloads’ flag is added to the sandbox 
+            	img.setAttribute('download', filename);
             }
             else
             {
+            	img.setAttribute('src', ('data:' + mimeType + ((base64Encoded) ?
+            		';base64,' + data : ';charset=utf8,' +
+            		encodeURIComponent(data))));
             	img.setAttribute('alt', filename);
             	mxUtils.br(div);
 	            mxUtils.br(div);
@@ -2211,7 +2220,10 @@ function main(isCreateViewer, onLoad)
         	// Adds open in new window for non-native apps
         	var dlg = new CustomDialog(ui, div, function()
             {
-                // do nothing
+        		if (format == 'pdf')
+        		{
+        			URL.revokeObjectURL(img.href);
+        		}
             }, mxUtils.bind(this, function()
             {
            		this.openInNewWindow(data, mimeType, base64Encoded);
@@ -5066,7 +5078,8 @@ function updateActions()
         }
 
         // Cannot call print or open new window in native apps
-        if ((Editor.config != null && Editor.config.pdfExport != null &&
+        if ((quip.apps.isNative != null && quip.apps.isNative()) ||
+        	(Editor.config != null && Editor.config.pdfExport != null &&
             !Editor.config.pdfExport))
         {
         	ui.actions.get('exportPdf').setEnabled(false);
