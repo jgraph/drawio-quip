@@ -12,6 +12,6 @@
         "quip-apps-webpack-config": ">=0.0.18"
     },
     "dependencies": {
-        "npm": "^6.13.4"
+        "npm": "^6.14.6"
     }
 }
