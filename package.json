@@ -9,7 +9,8 @@
     },
     "author": "",
     "devDependencies": {
-        "quip-apps-webpack-config": ">=0.0.18"
+        "quip-apps-webpack-config": ">=0.0.18",
+        "webpack-cli": "^4.6.0"
     },
     "dependencies": {
         "npm": "^6.13.4"
